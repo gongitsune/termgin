@@ -52,6 +52,7 @@ fn draw_line<TUniform, TFrag, TTarget>(
             depth.set(x, y, calc_depth);
             Vertex::interpolate(varying, &weight, calc_depth, &mut frag_varying);
             frag_shader.main(uniform, &frag_varying, &mut frag_color);
+
             target.set(x, y, &frag_color);
         }
     }
@@ -139,7 +140,7 @@ pub fn triangle<TUniform, TVert, TFrag, TTarget>(
     depth: &mut DepthBuffer,
     target: &mut TTarget,
     uniform: &TUniform,
-    verts: &[&Vertex; 3],
+    verts: &[Vertex; 3],
 ) where
     TVert: VertexProgram<TUniform>,
     TFrag: FragmentProgram<TUniform>,
@@ -155,7 +156,7 @@ pub fn triangle<TUniform, TVert, TFrag, TTarget>(
 
     // vert shader
     for i in 0..3 {
-        vert_shader.main(uniform, verts[i], &mut varying[i], &mut pos[i]);
+        vert_shader.main(uniform, &verts[i], &mut varying[i], &mut pos[i]);
     }
 
     if pos.iter().all(|v| v.w < 0.0) {
