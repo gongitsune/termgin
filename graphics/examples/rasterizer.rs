@@ -7,6 +7,7 @@ use graphics::raster::{
     vertex::Vertex,
 };
 use libc::{ioctl, winsize, STDOUT_FILENO, TIOCGWINSZ};
+use log::info;
 
 struct VertShader {}
 struct FragShader {}
@@ -25,7 +26,7 @@ impl VertexProgram<Uniform> for VertShader {
 }
 impl FragmentProgram<Uniform> for FragShader {
     fn main(&self, _: &Uniform, varying: &Vertex, output: &mut Vec4) {
-        *output = varying.pos;
+        *output = varying.pos + 0.5;
     }
 }
 impl RenderTarget for TerminalTarget {
@@ -37,12 +38,12 @@ impl RenderTarget for TerminalTarget {
     }
     fn set(&mut self, x: usize, y: usize, color: &Vec4) {
         print!(
-            "\x1b[{};{}H\x1b[48;2;{};{};{}m \x1b[0m",
+            "\x1b[{};{}H\x1b[48;2;{};{};{}m ",
             y + 1,
             x + 1,
-            color.x as usize * 255,
-            color.y as usize * 255,
-            color.z as usize * 255
+            (color.x * 255.) as usize,
+            (color.y * 255.) as usize,
+            (color.z * 255.) as usize
         );
     }
 }
@@ -56,8 +57,8 @@ impl TerminalTarget {
         }
         .unwrap();
         Self {
-            width: ws.ws_row as usize,
-            height: ws.ws_col as usize,
+            width: ws.ws_col as usize,
+            height: ws.ws_row as usize,
         }
     }
 }
@@ -73,21 +74,23 @@ fn main() {
 
     let verts = [
         Vertex {
-            pos: Vec4::new(0.1, 0.0, 0.0, 1.0),
+            pos: Vec4::new(-0.5, 0.0, 0.0, 1.0),
             normal: Vec3A::new(0.0, 0.0, 0.0),
             uv: Vec2::new(0.0, 0.0),
         },
         Vertex {
-            pos: Vec4::new(0.0, 0.9, 0.0, 1.0),
+            pos: Vec4::new(0.0, 0.5, 0.0, 1.0),
             normal: Vec3A::new(0.0, 0.0, 0.0),
             uv: Vec2::new(0.0, 0.0),
         },
         Vertex {
-            pos: Vec4::new(0.9, 0.5, 0.0, 1.0),
+            pos: Vec4::new(0.5, 0.0, 0.0, 1.0),
             normal: Vec3A::new(0.0, 0.0, 0.0),
             uv: Vec2::new(0.0, 0.0),
         },
     ];
+
+    info!("term size: {} x {}", term.width(), term.height());
 
     print!("\x1b[2J");
     triangle(
@@ -98,4 +101,5 @@ fn main() {
         &Uniform {},
         &verts,
     );
+    print!("\x1b[0m");
 }
