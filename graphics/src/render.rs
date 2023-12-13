@@ -1,3 +1,4 @@
 pub mod camera;
-pub mod geometory;
+pub mod geometry;
 pub mod material;
+pub mod texture;

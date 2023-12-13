@@ -5,3 +5,7 @@ pub struct ConstantBuffer {
     pub view: Mat4,
     pub projection: Mat4,
 }
+
+pub struct TextureBuffer {
+    // pub main_tex: Texture
+}
