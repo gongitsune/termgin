@@ -1,10 +1,7 @@
 use glam::{Vec2, Vec3A, Vec4};
-use graphics::raster::{
-    depth::DepthBuffer,
-    raster::triangle,
+use graphics::{
+    raster::{depth::DepthBuffer, raster::triangle, target::RenderTarget, vertex::Vertex},
     shader::{FragmentProgram, VertexProgram},
-    target::RenderTarget,
-    vertex::Vertex,
 };
 use libc::{ioctl, winsize, STDOUT_FILENO, TIOCGWINSZ};
 use log::info;

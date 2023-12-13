@@ -1,9 +1,5 @@
-use super::{
-    depth::DepthBuffer,
-    shader::{FragmentProgram, VertexProgram},
-    target::RenderTarget,
-    vertex::Vertex,
-};
+use super::{depth::DepthBuffer, target::RenderTarget, vertex::Vertex};
+use crate::shader::{FragmentProgram, VertexProgram};
 use glam::{vec2, Vec2, Vec4};
 
 fn edge(v0: &[&Vec2; 3]) -> f32 {

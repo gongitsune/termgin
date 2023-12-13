@@ -1,6 +1,7 @@
-use glam::Vec4;
+pub mod tex_mat;
 
-use super::vertex::Vertex;
+use crate::raster::vertex::Vertex;
+use glam::Vec4;
 
 pub trait VertexProgram<T> {
     fn main(&self, uniforms: &T, vertex: &Vertex, varying: &mut Vertex, output: &mut Vec4);
