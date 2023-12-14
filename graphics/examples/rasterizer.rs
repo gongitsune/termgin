@@ -1,17 +1,14 @@
 use glam::{Vec2, Vec3A, Vec4};
 use graphics::{
-    raster::{depth::DepthBuffer, raster::triangle, target::RenderTarget, vertex::Vertex},
+    raster::{depth::DepthBuffer, raster::triangle, vertex::Vertex},
+    render::texture::Texture,
     shader::{FragmentProgram, VertexProgram},
+    terminal::{color::ColorTerminal, Terminal},
 };
-use libc::{ioctl, winsize, STDOUT_FILENO, TIOCGWINSZ};
 use log::info;
 
 struct VertShader {}
 struct FragShader {}
-struct TerminalTarget {
-    width: usize,
-    height: usize,
-}
 struct Uniform {}
 impl VertexProgram<Uniform> for VertShader {
     fn main(&self, _: &Uniform, vertex: &Vertex, varying: &mut Vertex, output: &mut Vec4) {
@@ -26,48 +23,12 @@ impl FragmentProgram<Uniform> for FragShader {
         *output = varying.pos + 0.5;
     }
 }
-impl RenderTarget for TerminalTarget {
-    fn width(&self) -> usize {
-        self.width
-    }
-    fn height(&self) -> usize {
-        self.height
-    }
-    fn set(&mut self, x: usize, y: usize, color: &Vec4) {
-        print!(
-            "\x1b[{};{}H\x1b[48;2;{};{};{}m ",
-            y + 1,
-            x + 1,
-            (color.x * 255.) as usize,
-            (color.y * 255.) as usize,
-            (color.z * 255.) as usize
-        );
-    }
-
-    fn clear(&mut self, _: Vec4) {
-        print!("\x1b[2J");
-    }
-}
-impl TerminalTarget {
-    fn new() -> Self {
-        let mut ws: winsize = unsafe { std::mem::zeroed() };
-        ws = if unsafe { ioctl(STDOUT_FILENO, TIOCGWINSZ, &mut ws) } == -1 {
-            None
-        } else {
-            Some(ws)
-        }
-        .unwrap();
-        Self {
-            width: ws.ws_col as usize,
-            height: ws.ws_row as usize,
-        }
-    }
-}
 
 fn main() {
     env_logger::init();
 
-    let mut term = TerminalTarget::new();
+    let mut term = ColorTerminal::new();
+    let mut target = Texture::new(term.width(), term.height());
     let mut depth = DepthBuffer::new(term.width(), term.height());
 
     let vert_shader = VertShader {};
@@ -93,14 +54,14 @@ fn main() {
 
     info!("term size: {} x {}", term.width(), term.height());
 
-    term.clear(Vec4::ZERO);
+    target.clear(&Vec4::ZERO);
     triangle(
         &vert_shader,
         &frag_shader,
         &mut depth,
-        &mut term,
+        &mut target,
         &Uniform {},
         &verts,
     );
-    print!("\x1b[0m");
+    term.present(&target);
 }
