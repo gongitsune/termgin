@@ -16,7 +16,8 @@ pub struct Uniform {
 pub struct TexMat {
     vert_shader: TexMatVertShader,
     frag_shader: TexMatFragShader,
-    uniform: Uniform,
+
+    main_tex: Texture,
 }
 
 impl Material<Uniform, TexMatVertShader, TexMatFragShader> for TexMat {
@@ -26,9 +27,5 @@ impl Material<Uniform, TexMatVertShader, TexMatFragShader> for TexMat {
 
     fn frag_shader(&self) -> &TexMatFragShader {
         &self.frag_shader
-    }
-
-    fn uniform(&self) -> &Uniform {
-        &self.uniform
     }
 }

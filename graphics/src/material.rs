@@ -8,5 +8,4 @@ where
 {
     fn vert_shader(&self) -> &TVert;
     fn frag_shader(&self) -> &TFrag;
-    fn uniform(&self) -> &TUniform;
 }

@@ -6,10 +6,10 @@ fn edge(v0: &[&Vec2; 3]) -> f32 {
     (v0[1].x - v0[0].x) * (v0[2].y - v0[0].y) - (v0[2].x - v0[0].x) * (v0[1].y - v0[0].y)
 }
 
-fn draw_line<TUniform, TFrag, TTarget>(
-    frag_shader: &TFrag,
+fn draw_line<TUniform>(
+    frag_shader: &dyn FragmentProgram<TUniform>,
     depth: &mut DepthBuffer,
-    target: &mut TTarget,
+    target: &mut dyn RenderTarget,
     uniform: &TUniform,
     clippos: &[&Vec2; 3],
     varying: &[Vertex; 3],
@@ -17,10 +17,7 @@ fn draw_line<TUniform, TFrag, TTarget>(
     min_x: usize,
     max_x: usize,
     y: usize,
-) where
-    TFrag: FragmentProgram<TUniform>,
-    TTarget: RenderTarget,
-{
+) {
     if y >= target.height() {
         return;
     }
@@ -72,18 +69,15 @@ fn calc_x_scan_range(y: usize, ordered: &[&Vec2; 4]) -> (usize, usize) {
     (min_x as usize, max_x as usize)
 }
 
-fn draw_triangle<TUniform, TFrag, TTarget>(
-    frag_shader: &TFrag,
+fn draw_triangle<TUniform>(
+    frag_shader: &dyn FragmentProgram<TUniform>,
     depth: &mut DepthBuffer,
-    target: &mut TTarget,
+    target: &mut dyn RenderTarget,
     uniform: &TUniform,
     varying: &[Vertex; 3],
     clippos: &[&Vec2; 3],
     corrected_z: &[f32; 3],
-) where
-    TFrag: FragmentProgram<TUniform>,
-    TTarget: RenderTarget,
-{
+) {
     let mut ordered = [clippos[0], clippos[1], clippos[2]];
     ordered.sort_by(|a, b| a.y.partial_cmp(&b.y).unwrap());
 
@@ -130,18 +124,14 @@ fn draw_triangle<TUniform, TFrag, TTarget>(
     }
 }
 
-pub fn triangle<TUniform, TVert, TFrag, TTarget>(
-    vert_shader: &TVert,
-    frag_shader: &TFrag,
+pub fn triangle<TUniform>(
+    vert_shader: &dyn VertexProgram<TUniform>,
+    frag_shader: &dyn FragmentProgram<TUniform>,
     depth: &mut DepthBuffer,
-    target: &mut TTarget,
+    target: &mut dyn RenderTarget,
     uniform: &TUniform,
     verts: &[Vertex; 3],
-) where
-    TVert: VertexProgram<TUniform>,
-    TFrag: FragmentProgram<TUniform>,
-    TTarget: RenderTarget,
-{
+) {
     let width = target.width() as f32;
     let height = target.height() as f32;
     let half_width = width as f32 / 2.0;
