@@ -43,6 +43,10 @@ impl RenderTarget for TerminalTarget {
             (color.z * 255.) as usize
         );
     }
+
+    fn clear(&mut self, _: Vec4) {
+        print!("\x1b[2J");
+    }
 }
 impl TerminalTarget {
     fn new() -> Self {
@@ -89,7 +93,7 @@ fn main() {
 
     info!("term size: {} x {}", term.width(), term.height());
 
-    print!("\x1b[2J");
+    term.clear(Vec4::ZERO);
     triangle(
         &vert_shader,
         &frag_shader,

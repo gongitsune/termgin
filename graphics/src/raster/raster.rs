@@ -7,9 +7,9 @@ fn edge(v0: &[&Vec2; 3]) -> f32 {
 }
 
 fn draw_line<TUniform>(
-    frag_shader: &dyn FragmentProgram<TUniform>,
+    frag_shader: &impl FragmentProgram<TUniform>,
     depth: &mut DepthBuffer,
-    target: &mut dyn RenderTarget,
+    target: &mut impl RenderTarget,
     uniform: &TUniform,
     clippos: &[&Vec2; 3],
     varying: &[Vertex; 3],
@@ -70,9 +70,9 @@ fn calc_x_scan_range(y: usize, ordered: &[&Vec2; 4]) -> (usize, usize) {
 }
 
 fn draw_triangle<TUniform>(
-    frag_shader: &dyn FragmentProgram<TUniform>,
+    frag_shader: &impl FragmentProgram<TUniform>,
     depth: &mut DepthBuffer,
-    target: &mut dyn RenderTarget,
+    target: &mut impl RenderTarget,
     uniform: &TUniform,
     varying: &[Vertex; 3],
     clippos: &[&Vec2; 3],
@@ -125,10 +125,10 @@ fn draw_triangle<TUniform>(
 }
 
 pub fn triangle<TUniform>(
-    vert_shader: &dyn VertexProgram<TUniform>,
-    frag_shader: &dyn FragmentProgram<TUniform>,
+    vert_shader: &impl VertexProgram<TUniform>,
+    frag_shader: &impl FragmentProgram<TUniform>,
     depth: &mut DepthBuffer,
-    target: &mut dyn RenderTarget,
+    target: &mut impl RenderTarget,
     uniform: &TUniform,
     verts: &[Vertex; 3],
 ) {

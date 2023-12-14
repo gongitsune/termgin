@@ -61,4 +61,10 @@ impl RenderTarget for Texture {
         let slice = self.data[offset..offset + 4].as_mut();
         color.write_to_slice(slice);
     }
+
+    fn clear(&mut self, color: Vec4) {
+        for i in (0..self.data.len()).step_by(4) {
+            color.write_to_slice(&mut self.data[i..i + 4]);
+        }
+    }
 }
