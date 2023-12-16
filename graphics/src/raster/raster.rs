@@ -1,6 +1,7 @@
 use super::{depth::DepthBuffer, target::RenderTarget, vertex::Vertex};
 use crate::shader::{FragmentProgram, VertexProgram};
 use glam::{vec2, Vec2, Vec4};
+use log::trace;
 
 fn edge(v0: &[&Vec2; 3]) -> f32 {
     (v0[1].x - v0[0].x) * (v0[2].y - v0[0].y) - (v0[2].x - v0[0].x) * (v0[1].y - v0[0].y)
@@ -78,6 +79,8 @@ fn draw_triangle<TUniform>(
     clippos: &[&Vec2; 3],
     corrected_z: &[f32; 3],
 ) {
+    trace!("draw_triangle");
+
     let mut ordered = [clippos[0], clippos[1], clippos[2]];
     ordered.sort_by(|a, b| a.y.partial_cmp(&b.y).unwrap());
 
@@ -146,6 +149,7 @@ pub fn triangle<TUniform>(
     }
 
     if pos.iter().all(|v| v.w < 0.0) {
+        trace!("triangle is behind camera");
         return;
     }
 

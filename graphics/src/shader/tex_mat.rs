@@ -11,8 +11,8 @@ impl VertexProgram<Uniform> for TexMatVertShader {
         varying.normal = vertex.normal;
         varying.uv = vertex.uv;
 
-        let wvp = uniforms.world * uniforms.view * uniforms.projection;
-        *output = wvp * vertex.pos;
+        let wv = uniforms.view * uniforms.world;
+        *output = uniforms.projection * wv * vertex.pos;
     }
 }
 

@@ -1,4 +1,4 @@
-use crate::raster::target::RenderTarget;
+use crate::raster::{depth::DepthBuffer, target::RenderTarget};
 use glam::Vec4;
 use image::{DynamicImage, GenericImageView};
 
@@ -11,10 +11,20 @@ pub struct Texture {
 impl From<DynamicImage> for Texture {
     fn from(value: DynamicImage) -> Self {
         let (width, height) = value.dimensions();
+        let mut data = vec![0.0; (width * height * 4) as usize];
+
+        for (x, y, pixel) in value.pixels() {
+            let offset = (x + y * width) as usize * 4;
+            data[offset + 0] = pixel[0] as f32 / 255.0;
+            data[offset + 1] = pixel[1] as f32 / 255.0;
+            data[offset + 2] = pixel[2] as f32 / 255.0;
+            data[offset + 3] = pixel[3] as f32 / 255.0;
+        }
+
         Self {
             width: width as usize,
             height: height as usize,
-            data: value.as_rgba32f().unwrap().to_vec(),
+            data,
         }
     }
 }
@@ -25,6 +35,19 @@ impl Texture {
             width,
             height,
             data: vec![0.0; width * height * 4],
+        }
+    }
+
+    pub fn load_from_depth(&mut self, depth: &DepthBuffer) {
+        for y in 0..self.height {
+            for x in 0..self.width {
+                let offset = self.offset(x, y);
+                let depth = depth.get(x, y).abs();
+                self.data[offset + 0] = depth;
+                self.data[offset + 1] = depth;
+                self.data[offset + 2] = depth;
+                self.data[offset + 3] = 1.0;
+            }
         }
     }
 
