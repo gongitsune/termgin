@@ -16,8 +16,15 @@ pub struct Uniform {
 pub struct TexMat {
     vert_shader: TexMatVertShader,
     frag_shader: TexMatFragShader,
+}
 
-    main_tex: Texture,
+impl TexMat {
+    pub fn new() -> Self {
+        Self {
+            vert_shader: TexMatVertShader {},
+            frag_shader: TexMatFragShader {},
+        }
+    }
 }
 
 impl Material<Uniform, TexMatVertShader, TexMatFragShader> for TexMat {

@@ -1,10 +1,22 @@
 use crate::raster::target::RenderTarget;
 use glam::Vec4;
+use image::{DynamicImage, GenericImageView};
 
 pub struct Texture {
     pub width: usize,
     pub height: usize,
     data: Vec<f32>,
+}
+
+impl From<DynamicImage> for Texture {
+    fn from(value: DynamicImage) -> Self {
+        let (width, height) = value.dimensions();
+        Self {
+            width: width as usize,
+            height: height as usize,
+            data: value.as_rgba32f().unwrap().to_vec(),
+        }
+    }
 }
 
 impl Texture {

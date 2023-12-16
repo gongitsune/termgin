@@ -1,4 +1,7 @@
-use crate::{raster::vertex::Vertex, render::mesh::Mesh};
+use crate::{
+    raster::vertex::Vertex,
+    render::{mesh::Mesh, texture::Texture},
+};
 use anyhow::{Ok, Result};
 use glam::{vec2, vec3a, vec4};
 use std::{
@@ -6,6 +9,12 @@ use std::{
     io::{BufRead, BufReader},
     path::Path,
 };
+
+pub fn load_texture(path: &Path) -> Result<Texture> {
+    let img = image::open(path)?;
+
+    Ok(Texture::from(img))
+}
 
 pub fn load_mesh(path: &Path) -> Result<Mesh> {
     let mut acc_v = vec![];
