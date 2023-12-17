@@ -15,7 +15,7 @@ impl From<DynamicImage> for Texture {
 
         for (x, y, pixel) in value.pixels() {
             let offset = (x + y * width) as usize * 4;
-            data[offset + 0] = pixel[0] as f32 / 255.0;
+            data[offset] = pixel[0] as f32 / 255.0;
             data[offset + 1] = pixel[1] as f32 / 255.0;
             data[offset + 2] = pixel[2] as f32 / 255.0;
             data[offset + 3] = pixel[3] as f32 / 255.0;
@@ -43,7 +43,7 @@ impl Texture {
             for x in 0..self.width {
                 let offset = self.offset(x, y);
                 let depth = depth.get(x, y).abs();
-                self.data[offset + 0] = depth;
+                self.data[offset] = depth;
                 self.data[offset + 1] = depth;
                 self.data[offset + 2] = depth;
                 self.data[offset + 3] = 1.0;
@@ -59,7 +59,7 @@ impl Texture {
 
     pub fn get_to_out(&self, x: usize, y: usize, output: &mut Vec4) {
         let offset = self.offset(x, y);
-        output.x = self.data[offset + 0];
+        output.x = self.data[offset];
         output.y = self.data[offset + 1];
         output.z = self.data[offset + 2];
         output.w = self.data[offset + 3];
@@ -69,7 +69,7 @@ impl Texture {
         let px = (x.abs() * self.width as f32) as usize % self.width;
         let py = (y.abs() * self.height as f32) as usize % self.height;
         let offset = self.offset(px, py);
-        output.x = self.data[offset + 0];
+        output.x = self.data[offset];
         output.y = self.data[offset + 1];
         output.z = self.data[offset + 2];
         output.w = self.data[offset + 3];

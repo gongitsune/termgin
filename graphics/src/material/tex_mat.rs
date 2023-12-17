@@ -18,6 +18,12 @@ pub struct TexMat {
     frag_shader: TexMatFragShader,
 }
 
+impl Default for TexMat {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl TexMat {
     pub fn new() -> Self {
         Self {

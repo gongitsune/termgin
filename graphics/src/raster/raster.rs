@@ -137,8 +137,8 @@ pub fn triangle<TUniform>(
 ) {
     let width = target.width() as f32;
     let height = target.height() as f32;
-    let half_width = width as f32 / 2.0;
-    let half_height = height as f32 / 2.0;
+    let half_width = width / 2.0;
+    let half_height = height / 2.0;
 
     let mut varying = [Vertex::default(); 3];
     let mut pos = [Vec4::default(); 3];
@@ -172,7 +172,7 @@ pub fn triangle<TUniform>(
         varying[i].correct_mut(pos[i].w);
     }
 
-    if edge(&clippos) >= 0. {
+    if -edge(&clippos) >= 0. {
         draw_triangle(
             frag_shader,
             depth,

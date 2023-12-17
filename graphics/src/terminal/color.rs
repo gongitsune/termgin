@@ -11,6 +11,12 @@ pub struct ColorTerminal<'a> {
     height: usize,
 }
 
+impl<'a> Default for ColorTerminal<'a> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<'a> ColorTerminal<'a> {
     pub fn new() -> Self {
         let mut ws: winsize = unsafe { std::mem::zeroed() };
@@ -22,7 +28,7 @@ impl<'a> ColorTerminal<'a> {
         .unwrap();
 
         let width = ws.ws_col as usize;
-        let height = ws.ws_row as usize;
+        let height = ws.ws_row as usize * 2;
         let stream = String::with_capacity(width * height * 16);
         Self {
             out: BufWriter::new(stdout().lock()),

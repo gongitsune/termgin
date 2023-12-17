@@ -3,12 +3,9 @@ use crate::{
     render::{mesh::Mesh, texture::Texture},
 };
 use anyhow::{anyhow, Ok, Result};
-use glam::{vec2, vec3a, vec4};
-use std::{
-    fs::File,
-    io::{BufRead, BufReader},
-    path::Path,
-};
+use glam::{vec2, vec4, Vec3A};
+use obj::{Obj, TexturedVertex};
+use std::{fs::File, io::BufReader, path::Path};
 
 pub fn load_texture(path: &Path) -> Result<Texture> {
     let img = image::open(path)?.flipv();
@@ -16,62 +13,38 @@ pub fn load_texture(path: &Path) -> Result<Texture> {
     Ok(Texture::from(img))
 }
 
-fn parse_obj(path: &Path) -> Result<Mesh> {
-    let reader = BufReader::new(File::open(path)?);
+fn load_obj(reader: BufReader<File>) -> Result<Mesh> {
+    let model: Obj<TexturedVertex> = obj::load_obj(reader)?;
 
-    let mut positions = Vec::new();
-    let mut normals = Vec::new();
-    let mut tex_coords = Vec::new();
-    let mut indices = Vec::new();
+    let vertices = model
+        .vertices
+        .iter()
+        .map(|v| Vertex {
+            pos: vec4(v.position[0], v.position[1], v.position[2], 1.0),
+            normal: Vec3A::from_array(v.normal),
+            uv: vec2(v.texture[0], v.texture[1]),
+        })
+        .collect::<Vec<_>>();
+    let indices = model.indices.iter().map(|i| *i as u32).collect::<Vec<_>>();
 
-    let mut vertices = None;
+    Ok(Mesh { vertices, indices })
+}
 
-    for line in reader.lines() {
-        let line = line?;
-        let parts = line.split(' ').map(|v| v.trim()).collect::<Vec<_>>();
-        if parts[0] == "v" {
-            let x = parts[1].parse::<f32>()?;
-            let y = parts[2].parse::<f32>()?;
-            let z = parts[3].parse::<f32>()?;
-            positions.push(vec4(x, y, z, 1.0));
-        } else if parts[0] == "vn" {
-            let x = parts[1].parse::<f32>()?;
-            let y = parts[2].parse::<f32>()?;
-            let z = parts[3].parse::<f32>()?;
-            normals.push(vec3a(x, y, z));
-        } else if parts[0] == "vt" {
-            let x = parts[1].parse::<f32>()?;
-            let y = parts[2].parse::<f32>()?;
-            tex_coords.push(vec2(x, y));
-        } else if parts[0] == "f" {
-            if vertices.is_none() {
-                vertices = Some(vec![Vertex::default(); positions.len()]);
-            }
-            let vertices = vertices.as_mut().unwrap();
+fn load_gltf(reader: BufReader<File>) -> Result<Mesh> {
+    let gltf = gltf::Gltf::from_reader(reader)?;
 
-            for i in 0..3 {
-                let face = parts[3 - i]
-                    .split('/')
-                    .map(|v| v.parse::<usize>().unwrap() - 1)
-                    .collect::<Vec<_>>();
-                let v = face[0];
-                let vt = face[1];
-                let vn = face[2];
-
-                vertices[v].pos = positions[v];
-                vertices[v].normal = normals[vn];
-                vertices[v].uv = tex_coords[vt];
-                indices.push(v as u32);
-            }
-        }
-    }
-
-    Ok(Mesh {
-        vertices: vertices.ok_or(anyhow!("No vertices found"))?,
-        indices,
-    })
+    let gltf_mesh = gltf.meshes().next().ok_or(anyhow!("no meshes"))?;
+    println!("gltf mesh: {:?}", gltf_mesh);
+    Err(anyhow!("not implemented"))
 }
 
 pub fn load_mesh(path: &Path) -> Result<Mesh> {
-    parse_obj(path)
+    let reader = BufReader::new(File::open(path)?);
+
+    match path.extension().and_then(|s| s.to_str()) {
+        Some("obj") => load_obj(reader),
+        Some("gltf") => load_gltf(reader),
+        Some(ext) => Err(anyhow!("unsupported file extension: {}", ext)),
+        None => Err(anyhow!("no file extension")),
+    }
 }
