@@ -39,27 +39,37 @@ fn main() -> Result<()> {
         projection: camera.projection,
         main_tex,
     };
-    let renderer = Renderer::new(uniform);
+    let mut renderer = Renderer::new(uniform);
     let mut depth = DepthBuffer::new(term.width(), term.height());
     let mut target = Texture::new(term.width(), term.height());
 
     let mesh = load_mesh(Path::new("./data/cube.obj"))?;
-    dbg!(&mesh);
     let mat = TexMat::new();
 
-    renderer.clear(&mut target, &mut depth, Vec4::ZERO);
-    renderer.draw_mesh(
-        &mesh,
-        mat.vert_shader(),
-        mat.frag_shader(),
-        &mut depth,
-        &mut target,
-    );
-    term.present(&target);
+    let mut delta = 0.0;
+    loop {
+        delta += 0.1;
+
+        renderer.uniform_buffer.world = Mat4::from_quat(Quat::from_euler(
+            EulerRot::XYZ,
+            PI / 12.0 * 4.0 * delta,
+            PI / 12.0 * 4.0 * delta,
+            0.0,
+        ));
+
+        renderer.clear(&mut target, &mut depth, Vec4::ZERO);
+        renderer.draw_mesh(
+            &mesh,
+            mat.vert_shader(),
+            mat.frag_shader(),
+            &mut depth,
+            &mut target,
+        );
+        term.present(&target);
+    }
+
     //
     // target.clear(&vec4(1.0, 0.0, 0.0, 1.0));
     // target.load_from_depth(&depth);
     // term.present(&target);
-
-    Ok(())
 }

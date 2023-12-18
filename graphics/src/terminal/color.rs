@@ -73,6 +73,7 @@ impl<'a> Terminal for ColorTerminal<'a> {
 
     fn present(&mut self, tex: &Texture) {
         self.stream.clear();
+        self.stream.push_str("\x1b[H");
 
         let mut bg_color = Vec4::ZERO;
         let mut fg_color = Vec4::ZERO;
