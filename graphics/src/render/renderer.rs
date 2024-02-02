@@ -1,6 +1,6 @@
 use super::mesh::Mesh;
 use crate::{
-    raster::{depth::DepthBuffer, raster::triangle, target::RenderTarget},
+    raster::{depth::DepthBuffer, raster::triangle, target::RenderTarget, vertex::VertexTrait},
     shader::{FragmentProgram, VertexProgram},
 };
 use glam::Vec4;
@@ -14,14 +14,16 @@ impl<TUniform> Renderer<TUniform> {
         Self { uniform_buffer }
     }
 
-    pub fn draw_mesh(
+    pub fn draw_mesh<TVertex>(
         &self,
-        mesh: &Mesh,
-        vert_shader: &impl VertexProgram<TUniform>,
-        frag_shader: &impl FragmentProgram<TUniform>,
+        mesh: &Mesh<TVertex>,
+        vert_shader: &impl VertexProgram<TUniform, TVertex>,
+        frag_shader: &impl FragmentProgram<TUniform, TVertex>,
         depth: &mut DepthBuffer,
         target: &mut impl RenderTarget,
-    ) {
+    ) where
+        TVertex: VertexTrait + Default + Copy,
+    {
         for i in (0..mesh.indices.len()).step_by(3) {
             let v0 = mesh.vertices[mesh.indices[i] as usize];
             let v1 = mesh.vertices[mesh.indices[i + 1] as usize];

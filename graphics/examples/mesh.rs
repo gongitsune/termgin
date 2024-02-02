@@ -1,12 +1,12 @@
 use anyhow::Result;
-use glam::{vec3, vec4, EulerRot, Mat4, Quat, Vec4};
+use glam::{vec2, vec3, vec4, EulerRot, Mat4, Quat, Vec3A, Vec4};
 use graphics::{
     loader::{load_mesh, load_texture},
     material::{
         tex_mat::{self, TexMat},
         Material,
     },
-    raster::depth::DepthBuffer,
+    raster::{depth::DepthBuffer, vertex::SimpleVertex},
     render::{camera::Camera, renderer::Renderer, texture::Texture},
     terminal::{color::ColorTerminal, Terminal},
 };
@@ -43,17 +43,25 @@ fn main() -> Result<()> {
     let mut depth = DepthBuffer::new(term.width(), term.height());
     let mut target = Texture::new(term.width(), term.height());
 
-    let mesh = load_mesh(Path::new("./data/cube.obj"))?;
+    let mesh = load_mesh(Path::new("./data/cube.obj"), |v| SimpleVertex {
+        pos: vec4(v.position[0], v.position[1], v.position[2], 1.0),
+        normal: Vec3A::from_array(v.normal),
+        uv: vec2(v.texture[0], v.texture[1]),
+    })?;
     let mat = TexMat::new();
 
-    let mut delta = 0.0;
-    loop {
-        delta += 0.1;
+    let mut total_time = 0.0;
 
+    let mut now = std::time::Instant::now();
+    loop {
+        let delta = now.elapsed().as_secs_f32();
+        now = std::time::Instant::now();
+
+        total_time += delta;
         renderer.uniform_buffer.world = Mat4::from_quat(Quat::from_euler(
             EulerRot::XYZ,
-            PI / 12.0 * 4.0 * delta,
-            PI / 12.0 * 4.0 * delta,
+            PI / 12.0 * 4.0 * total_time,
+            PI / 12.0 * 4.0 * total_time,
             0.0,
         ));
 
@@ -67,9 +75,4 @@ fn main() -> Result<()> {
         );
         term.present(&target);
     }
-
-    //
-    // target.clear(&vec4(1.0, 0.0, 0.0, 1.0));
-    // target.load_from_depth(&depth);
-    // term.present(&target);
 }

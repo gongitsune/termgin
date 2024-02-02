@@ -1,12 +1,18 @@
 use super::{FragmentProgram, VertexProgram};
-use crate::{material::tex_mat::Uniform, raster::vertex::Vertex};
+use crate::{material::tex_mat::Uniform, raster::vertex::SimpleVertex};
 use glam::Vec4;
 
 pub struct TexMatVertShader {}
 pub struct TexMatFragShader {}
 
-impl VertexProgram<Uniform> for TexMatVertShader {
-    fn main(&self, uniforms: &Uniform, vertex: &Vertex, varying: &mut Vertex, output: &mut Vec4) {
+impl VertexProgram<Uniform, SimpleVertex> for TexMatVertShader {
+    fn main(
+        &self,
+        uniforms: &Uniform,
+        vertex: &SimpleVertex,
+        varying: &mut SimpleVertex,
+        output: &mut Vec4,
+    ) {
         varying.pos = vertex.pos;
         varying.normal = vertex.normal;
         varying.uv = vertex.uv;
@@ -16,8 +22,8 @@ impl VertexProgram<Uniform> for TexMatVertShader {
     }
 }
 
-impl FragmentProgram<Uniform> for TexMatFragShader {
-    fn main(&self, uniforms: &Uniform, varying: &Vertex, output: &mut Vec4) {
+impl FragmentProgram<Uniform, SimpleVertex> for TexMatFragShader {
+    fn main(&self, uniforms: &Uniform, varying: &SimpleVertex, output: &mut Vec4) {
         let uv = varying.uv;
         uniforms.main_tex.sample_to_out(uv.x, uv.y, output);
     }

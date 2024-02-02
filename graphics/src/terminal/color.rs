@@ -28,7 +28,7 @@ impl<'a> ColorTerminal<'a> {
         .unwrap();
 
         let width = ws.ws_col as usize;
-        let height = ws.ws_row as usize * 2;
+        let height = ws.ws_row as usize * 2 - 2;
         let stream = String::with_capacity(width * height * 16);
         Self {
             out: BufWriter::new(stdout().lock()),

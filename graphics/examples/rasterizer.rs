@@ -1,6 +1,6 @@
 use glam::{Vec2, Vec3A, Vec4};
 use graphics::{
-    raster::{depth::DepthBuffer, raster::triangle, vertex::Vertex},
+    raster::{depth::DepthBuffer, raster::triangle, vertex::SimpleVertex},
     render::texture::Texture,
     shader::{FragmentProgram, VertexProgram},
     terminal::{color::ColorTerminal, Terminal},
@@ -10,16 +10,22 @@ use log::info;
 struct VertShader {}
 struct FragShader {}
 struct Uniform {}
-impl VertexProgram<Uniform> for VertShader {
-    fn main(&self, _: &Uniform, vertex: &Vertex, varying: &mut Vertex, output: &mut Vec4) {
+impl VertexProgram<Uniform, SimpleVertex> for VertShader {
+    fn main(
+        &self,
+        _: &Uniform,
+        vertex: &SimpleVertex,
+        varying: &mut SimpleVertex,
+        output: &mut Vec4,
+    ) {
         varying.pos = vertex.pos;
         varying.normal = vertex.normal;
         varying.uv = vertex.uv;
         *output = vertex.pos;
     }
 }
-impl FragmentProgram<Uniform> for FragShader {
-    fn main(&self, _: &Uniform, varying: &Vertex, output: &mut Vec4) {
+impl FragmentProgram<Uniform, SimpleVertex> for FragShader {
+    fn main(&self, _: &Uniform, varying: &SimpleVertex, output: &mut Vec4) {
         *output = varying.pos + 0.5;
     }
 }
@@ -35,17 +41,17 @@ fn main() {
     let frag_shader = FragShader {};
 
     let verts = [
-        Vertex {
+        SimpleVertex {
             pos: Vec4::new(-0.5, 0.0, 0.0, 1.0),
             normal: Vec3A::new(0.0, 0.0, 0.0),
             uv: Vec2::new(0.0, 0.0),
         },
-        Vertex {
+        SimpleVertex {
             pos: Vec4::new(0.0, 0.5, 0.0, 1.0),
             normal: Vec3A::new(0.0, 0.0, 0.0),
             uv: Vec2::new(0.0, 0.0),
         },
-        Vertex {
+        SimpleVertex {
             pos: Vec4::new(0.5, 0.0, 0.0, 1.0),
             normal: Vec3A::new(0.0, 0.0, 0.0),
             uv: Vec2::new(0.0, 0.0),

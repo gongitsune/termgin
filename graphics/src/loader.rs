@@ -1,9 +1,8 @@
 use crate::{
-    raster::vertex::Vertex,
+    raster::vertex::VertexTrait,
     render::{mesh::Mesh, texture::Texture},
 };
 use anyhow::{anyhow, Ok, Result};
-use glam::{vec2, vec4, Vec3A};
 use obj::{Obj, TexturedVertex};
 use std::{fs::File, io::BufReader, path::Path};
 
@@ -13,37 +12,28 @@ pub fn load_texture(path: &Path) -> Result<Texture> {
     Ok(Texture::from(img))
 }
 
-fn load_obj(reader: BufReader<File>) -> Result<Mesh> {
+fn load_obj<TVertex, F>(reader: BufReader<File>, f: F) -> Result<Mesh<TVertex>>
+where
+    TVertex: VertexTrait + Default + Copy,
+    F: Fn(&TexturedVertex) -> TVertex,
+{
     let model: Obj<TexturedVertex> = obj::load_obj(reader)?;
 
-    let vertices = model
-        .vertices
-        .iter()
-        .map(|v| Vertex {
-            pos: vec4(v.position[0], v.position[1], v.position[2], 1.0),
-            normal: Vec3A::from_array(v.normal),
-            uv: vec2(v.texture[0], v.texture[1]),
-        })
-        .collect::<Vec<_>>();
+    let vertices = model.vertices.iter().map(f).collect::<Vec<_>>();
     let indices = model.indices.iter().map(|i| *i as u32).collect::<Vec<_>>();
 
     Ok(Mesh { vertices, indices })
 }
 
-fn load_gltf(reader: BufReader<File>) -> Result<Mesh> {
-    let gltf = gltf::Gltf::from_reader(reader)?;
-
-    let gltf_mesh = gltf.meshes().next().ok_or(anyhow!("no meshes"))?;
-    println!("gltf mesh: {:?}", gltf_mesh);
-    Err(anyhow!("not implemented"))
-}
-
-pub fn load_mesh(path: &Path) -> Result<Mesh> {
+pub fn load_mesh<TVertex, F>(path: &Path, f: F) -> Result<Mesh<TVertex>>
+where
+    TVertex: VertexTrait + Default + Copy,
+    F: Fn(&TexturedVertex) -> TVertex,
+{
     let reader = BufReader::new(File::open(path)?);
 
     match path.extension().and_then(|s| s.to_str()) {
-        Some("obj") => load_obj(reader),
-        Some("gltf") => load_gltf(reader),
+        Some("obj") => load_obj(reader, f),
         Some(ext) => Err(anyhow!("unsupported file extension: {}", ext)),
         None => Err(anyhow!("no file extension")),
     }

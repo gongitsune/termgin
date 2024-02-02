@@ -1,5 +1,6 @@
 use super::Material;
 use crate::{
+    raster::vertex::SimpleVertex,
     render::texture::Texture,
     shader::tex_mat::{TexMatFragShader, TexMatVertShader},
 };
@@ -33,7 +34,7 @@ impl TexMat {
     }
 }
 
-impl Material<Uniform, TexMatVertShader, TexMatFragShader> for TexMat {
+impl Material<Uniform, TexMatVertShader, TexMatFragShader, SimpleVertex> for TexMat {
     fn vert_shader(&self) -> &TexMatVertShader {
         &self.vert_shader
     }

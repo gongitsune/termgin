@@ -1,4 +1,4 @@
-use super::{depth::DepthBuffer, target::RenderTarget, vertex::Vertex};
+use super::{depth::DepthBuffer, target::RenderTarget, vertex::VertexTrait};
 use crate::shader::{FragmentProgram, VertexProgram};
 use glam::{vec2, Vec2, Vec4};
 
@@ -6,18 +6,20 @@ fn edge(v0: &[&Vec2; 3]) -> f32 {
     (v0[1].x - v0[0].x) * (v0[2].y - v0[0].y) - (v0[2].x - v0[0].x) * (v0[1].y - v0[0].y)
 }
 
-fn draw_line<TUniform>(
-    frag_shader: &impl FragmentProgram<TUniform>,
+fn draw_line<TUniform, TVertex>(
+    frag_shader: &impl FragmentProgram<TUniform, TVertex>,
     depth: &mut DepthBuffer,
     target: &mut impl RenderTarget,
     uniform: &TUniform,
     clippos: &[&Vec2; 3],
-    varying: &[Vertex; 3],
+    varying: &[TVertex; 3],
     corrected_z: &[f32; 3],
     min_x: usize,
     max_x: usize,
     y: usize,
-) {
+) where
+    TVertex: VertexTrait + Default,
+{
     if y >= target.height() {
         return;
     }
@@ -27,7 +29,7 @@ fn draw_line<TUniform>(
 
     let edge_value = edge(clippos);
 
-    let mut frag_varying = Vertex::default();
+    let mut frag_varying = TVertex::default();
     let mut frag_color = Vec4::default();
     for x in min_x..max_x {
         let coord = vec2(x as f32, y as f32);
@@ -43,7 +45,7 @@ fn draw_line<TUniform>(
 
         if calc_depth <= depth.get(x, y) {
             depth.set(x, y, calc_depth);
-            Vertex::interpolate(varying, &weight, calc_depth, &mut frag_varying);
+            TVertex::interpolate(varying, &weight, calc_depth, &mut frag_varying);
             frag_shader.main(uniform, &frag_varying, &mut frag_color);
 
             target.set(x, y, &frag_color);
@@ -69,15 +71,17 @@ fn calc_x_scan_range(y: usize, ordered: &[&Vec2; 4]) -> (usize, usize) {
     (min_x as usize, max_x as usize)
 }
 
-fn draw_triangle<TUniform>(
-    frag_shader: &impl FragmentProgram<TUniform>,
+fn draw_triangle<TUniform, TVertex>(
+    frag_shader: &impl FragmentProgram<TUniform, TVertex>,
     depth: &mut DepthBuffer,
     target: &mut impl RenderTarget,
     uniform: &TUniform,
-    varying: &[Vertex; 3],
+    varying: &[TVertex; 3],
     clippos: &[&Vec2; 3],
     corrected_z: &[f32; 3],
-) {
+) where
+    TVertex: VertexTrait + Default,
+{
     let mut ordered = [clippos[0], clippos[1], clippos[2]];
     ordered.sort_by(|a, b| a.y.partial_cmp(&b.y).unwrap());
 
@@ -124,20 +128,22 @@ fn draw_triangle<TUniform>(
     }
 }
 
-pub fn triangle<TUniform>(
-    vert_shader: &impl VertexProgram<TUniform>,
-    frag_shader: &impl FragmentProgram<TUniform>,
+pub fn triangle<TUniform, TVertex>(
+    vert_shader: &impl VertexProgram<TUniform, TVertex>,
+    frag_shader: &impl FragmentProgram<TUniform, TVertex>,
     depth: &mut DepthBuffer,
     target: &mut impl RenderTarget,
     uniform: &TUniform,
-    verts: &[Vertex; 3],
-) {
+    verts: &[TVertex; 3],
+) where
+    TVertex: VertexTrait + Default + Copy,
+{
     let width = target.width() as f32;
     let height = target.height() as f32;
     let half_width = width / 2.0;
     let half_height = height / 2.0;
 
-    let mut varying = [Vertex::default(); 3];
+    let mut varying = [TVertex::default(); 3];
     let mut pos = [Vec4::default(); 3];
 
     // vert shader
