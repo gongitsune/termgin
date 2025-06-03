@@ -1,14 +1,14 @@
 use anyhow::Result;
-use glam::{vec2, vec3, vec4, EulerRot, Mat4, Quat, Vec3A, Vec4};
+use glam::{EulerRot, Mat4, Quat, Vec3A, Vec4, vec2, vec3, vec4};
 use graphics::{
     loader::{load_mesh, load_texture},
     material::{
-        tex_mat::{self, TexMat},
         Material,
+        tex_mat::{self, TexMat},
     },
     raster::{depth::DepthBuffer, vertex::SimpleVertex},
     render::{camera::Camera, renderer::Renderer, texture::Texture},
-    terminal::{color::ColorTerminal, Terminal},
+    terminal::{Terminal, color::ColorTerminal},
 };
 use std::{
     f32::consts::{FRAC_PI_2, PI},
